@@ -22,6 +22,7 @@ class CPU:
         self.call = 0b01010000
         self.ret = 0b00010001
         self.cmp = 0b10100111
+        self.jmp = 0b01010100
         self.branchtable = {}
         self.branchtable[self.hlt]=self.handle_htl
         self.branchtable[self.ldi]=self.handle_ldi
@@ -33,6 +34,7 @@ class CPU:
         self.branchtable[self.call]=self.handle_call
         self.branchtable[self.ret]=self.handle_ret
         self.branchtable[self.cmp]=self.handle_cmp
+        self.branchtable[self.jmp]=self.handle_jmp
     
     def handle_htl(self):
         # print("exit")
@@ -107,6 +109,12 @@ class CPU:
         reg_b = self.ram_read(operand_b)
         self.alu("CMP", reg_a, reg_b)
         self.pc += 3
+
+    def handle_jmp(self):
+        operand_a = self.pc+1
+        reg_a = self.ram_read(operand_a)
+        jump_addr = self.reg[reg_a]
+        self.pc = jump_addr
 
     def load(self):
         """Load a program into memory."""
