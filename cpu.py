@@ -11,7 +11,7 @@ class CPU:
         self.reg=[0x00] * 8
         self.reg[7] = 0xF4
         self.pc = 0
-        self.fl = 0
+        self.fl = 0b00000000
         self.hlt = 0b00000001
         self.ldi = 0b10000010
         self.prn = 0b01000111
@@ -21,6 +21,7 @@ class CPU:
         self.pop = 0b01000110
         self.call = 0b01010000
         self.ret = 0b00010001
+        self.cmp = 0b10100111
         self.branchtable = {}
         self.branchtable[self.hlt]=self.handle_htl
         self.branchtable[self.ldi]=self.handle_ldi
@@ -31,9 +32,10 @@ class CPU:
         self.branchtable[self.pop]=self.handle_pop
         self.branchtable[self.call]=self.handle_call
         self.branchtable[self.ret]=self.handle_ret
+        self.branchtable[self.cmp]=self.handle_cmp
     
     def handle_htl(self):
-        print("exit")
+        # print("exit")
         exit()
     
     def handle_ldi(self):
@@ -98,6 +100,14 @@ class CPU:
         self.reg[7] += 1
         self.pc = return_addr
 
+    def handle_cmp(self):
+        operand_a = self.pc+1
+        operand_b = self.pc+2
+        reg_a = self.ram_read(operand_a)              
+        reg_b = self.ram_read(operand_b)
+        self.alu("CMP", reg_a, reg_b)
+        self.pc += 3
+
     def load(self):
         """Load a program into memory."""
         address = 0
@@ -123,6 +133,12 @@ class CPU:
         #elif op == "SUB": etc
         elif op == "MUL":
             self.reg[reg_a] *= self.reg[reg_b]
+        elif op == "CMP":
+            if self.reg[reg_a] == self.reg[reg_b]:
+                # 00000LGE
+                self.fl = 0b00000001
+            else:
+                self.fl = 0b00000000
         else:
             raise Exception("Unsupported ALU operation")
     
